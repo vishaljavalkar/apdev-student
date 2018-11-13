@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <vm:connector name="VM" validateConnections="true" doc:name="VM"/>
+    <sfdc:config name="Salesforce__Basic_Authentication" username="demo@ibm.com.ibmlash" password="integration99" securityToken="26lFlJtXd5vFoXPAL0gFZoxie" doc:name="Salesforce: Basic Authentication"/>
+    <flow name="getStudentsFlow">
+        <poll doc:name="Poll">
+            <sfdc:query config-ref="Salesforce__Basic_Authentication" query="SELECT id,name,AccountId,BillingAddress,BillingCity,BillingCountry,Patient__c,Status FROM Order " doc:name="Salesforce"/>
+        </poll>
+        <logger level="INFO" doc:name="Logger" message="$message.payload"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="Caught in Parent Flow" level="INFO" doc:name="Logger"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="privateStudentFlow">
+        <set-variable variableName="f3" value="Flowvar3" doc:name="Variable"/>
+        <set-session-variable variableName="s3" value="SessionVar3" doc:name="Session Variable"/>
+        <logger level="INFO" doc:name="Logger"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="Caught in Private Flow" level="INFO" doc:name="Logger"/>
+        </catch-exception-strategy>
+    </flow>
+    <sub-flow name="getStudentsSubFlow">
+        <set-variable variableName="f2" value="Flowvar2" doc:name="Variable"/>
+        <set-session-variable variableName="s2" value="SessionVar2" doc:name="Session Variable"/>
+        <logger level="INFO" doc:name="Logger"/>
+    </sub-flow>
+    <flow name="getStudentsFlowByID">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/students/{ID}" allowedMethods="GET" doc:name="HTTP"/>
+        <set-payload value="{&quot;ID&quot;:1, &quot;name&quot;:&quot;vishal&quot;, &quot;grade&quot;:&quot;9th&quot;,&quot;gender&quot;:&quot;male&quot;}" doc:name="Set Payload"/>
+    </flow>
+    <flow name="postStudentsFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/students" allowedMethods="POST" doc:name="HTTP"/>
+        <set-payload value="{&quot;ID&quot;:3, &quot;name&quot;:&quot;bipin&quot;, &quot;grade&quot;:&quot;4th&quot;,&quot;gender&quot;:&quot;male&quot;}" doc:name="Set Payload"/>
+    </flow>
+</mule>
